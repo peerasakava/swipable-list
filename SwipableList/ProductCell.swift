@@ -4,7 +4,7 @@ import SwipeCellKit
 class ProductCell: SwipeCollectionViewCell { // Changed to inherit from SwipeCollectionViewCell
     static let reuseIdentifier = "ProductCell"
     
-    private let nameLabel: UILabel = {
+    let nameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 16)
         label.translatesAutoresizingMaskIntoConstraints = false
