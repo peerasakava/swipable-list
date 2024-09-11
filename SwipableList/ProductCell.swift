@@ -27,6 +27,14 @@ class ProductCell: SwipeCollectionViewCell { // Changed to inherit from SwipeCol
         return label
     }()
     
+    private let redDotView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .red
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 5 // This will make it circular
+        return view
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -40,6 +48,7 @@ class ProductCell: SwipeCollectionViewCell { // Changed to inherit from SwipeCol
         contentView.addSubview(nameLabel)
         contentView.addSubview(priceLabel)
         contentView.addSubview(descriptionLabel)
+        contentView.addSubview(redDotView)
         
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
@@ -53,7 +62,12 @@ class ProductCell: SwipeCollectionViewCell { // Changed to inherit from SwipeCol
             descriptionLabel.topAnchor.constraint(equalTo: priceLabel.bottomAnchor, constant: 4),
             descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            
+            redDotView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            redDotView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            redDotView.widthAnchor.constraint(equalToConstant: 10),
+            redDotView.heightAnchor.constraint(equalToConstant: 10)
         ])
     }
     

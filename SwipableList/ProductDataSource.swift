@@ -10,39 +10,34 @@ class ProductDataSource: UICollectionViewDiffableDataSource<Int, Product> {
         var snapshot = ProductSnapshot()
         snapshot.appendSections([0])
         snapshot.appendItems(products)
-        apply(snapshot, animatingDifferences: animatingDifferences)
+        apply(snapshot, 
+              animatingDifferences: animatingDifferences)
     }
-
+    
     override func collectionView(
         _ collectionView: UICollectionView,
         canMoveItemAt indexPath: IndexPath
     ) -> Bool {
         return true
     }
-
+    
     override func collectionView(
         _ collectionView: UICollectionView,
         moveItemAt sourceIndexPath: IndexPath,
         to destinationIndexPath: IndexPath
     ) {
-        guard var snapshot = self.snapshot() as ProductSnapshot?,
-              let sourceItem = itemIdentifier(for: sourceIndexPath) else {
-            return
-        }
-
-        snapshot.deleteItems([sourceItem])
+        // Update the data source
+        var currentSnapshot = snapshot()
+        let movedItem = currentSnapshot.itemIdentifiers[sourceIndexPath.item]
+        currentSnapshot.deleteItems([movedItem])
         
-        if let destinationItem = itemIdentifier(for: destinationIndexPath) {
-            if destinationIndexPath.item > sourceIndexPath.item {
-                snapshot.insertItems([sourceItem], afterItem: destinationItem)
-            } else {
-                snapshot.insertItems([sourceItem], beforeItem: destinationItem)
-            }
+        if destinationIndexPath.item >= currentSnapshot.itemIdentifiers.count {
+            currentSnapshot.appendItems([movedItem])
         } else {
-            snapshot.appendItems([sourceItem], toSection: 0)
+            currentSnapshot.insertItems([movedItem], beforeItem: currentSnapshot.itemIdentifiers[destinationIndexPath.item])
         }
-
-        apply(snapshot, animatingDifferences: false)
+        
+        apply(currentSnapshot, animatingDifferences: true)
     }
 }
 

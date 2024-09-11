@@ -17,7 +17,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         setupCollectionView()
         setupDataSource()
-        setupDragAndDrop()
+        setupLongPressGesture()
         loadData()
     }
     
@@ -32,6 +32,7 @@ class ViewController: UIViewController {
             ProductCell.self,
             forCellWithReuseIdentifier: ProductCell.reuseIdentifier
         ) // Updated to ProductCell
+        collectionView.dragInteractionEnabled = true // Enable drag interaction
         view.addSubview(collectionView)
     }
     
@@ -77,11 +78,27 @@ class ViewController: UIViewController {
         )
     }
     
-    private func setupDragAndDrop() {
-        collectionView.dragDelegate = self
-        collectionView.dropDelegate = self
-        collectionView.dragInteractionEnabled = true
+    private func setupLongPressGesture() {
+        let longPressGesture = UILongPressGestureRecognizer(target: self, 
+                                                            action: #selector(handleLongPressGesture(_:)))
+        collectionView.addGestureRecognizer(longPressGesture)
     }
+    
+    @objc private func handleLongPressGesture(_ gesture: UILongPressGestureRecognizer) {
+        switch gesture.state {
+        case .began:
+            guard let indexPath = collectionView.indexPathForItem(at: gesture.location(in: collectionView))
+            else { return }
+            collectionView.beginInteractiveMovementForItem(at: indexPath)
+        case .changed:
+            collectionView.updateInteractiveMovementTargetPosition(gesture.location(in: collectionView))
+        case .ended:
+            collectionView.endInteractiveMovement()
+        default:
+            break
+        }
+    }
+
     
     private func loadData() {
         products = [
@@ -116,7 +133,7 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: SwipeCollectionViewCellDelegate, UICollectionViewDragDelegate, UICollectionViewDropDelegate {
+extension ViewController: SwipeCollectionViewCellDelegate  {
     func collectionView(
         _ collectionView: UICollectionView,
         editActionsForItemAt indexPath: IndexPath,
@@ -143,52 +160,6 @@ extension ViewController: SwipeCollectionViewCellDelegate, UICollectionViewDragD
         }
         
         return [deleteAction, editAction]
-    }
-    
-    func collectionView(
-        _ collectionView: UICollectionView,
-        itemsForBeginning session: UIDragSession,
-        at indexPath: IndexPath
-    ) -> [UIDragItem] {
-        let item = products[indexPath.item]
-        let itemProvider = NSItemProvider(object: item.id.uuidString as NSString)
-        let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = item
-        return [dragItem]
-    }
-    
-    func collectionView(
-        _ collectionView: UICollectionView,
-        dropSessionDidUpdate session: UIDropSession,
-        withDestinationIndexPath destinationIndexPath: IndexPath?
-    ) -> UICollectionViewDropProposal {
-        if collectionView.hasActiveDrag {
-            return UICollectionViewDropProposal(
-                operation: .move,
-                intent: .insertAtDestinationIndexPath
-            )
-        }
-        return UICollectionViewDropProposal(operation: .forbidden)
-    }
-    
-    func collectionView(
-        _ collectionView: UICollectionView,
-        performDropWith coordinator: UICollectionViewDropCoordinator
-    ) {
-        guard let destinationIndexPath = coordinator.destinationIndexPath else { return }
-
-        for item in coordinator.items {
-            guard let sourceIndexPath = item.sourceIndexPath else { continue }
-            
-            print("sourceIndexPath: \(sourceIndexPath)")
-            // Reorder the data source immediately
-            let movedItem = products.remove(at: sourceIndexPath.item)
-            products.insert(movedItem, at: destinationIndexPath.item)
-        }
-
-        // Update the data source with a single update
-        dataSource.updateData(with: products,
-                              animatingDifferences: false)
     }
 }
 
